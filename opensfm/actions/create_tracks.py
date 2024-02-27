@@ -2,6 +2,9 @@ from timeit import default_timer as timer
 
 from opensfm import io
 from opensfm import tracking
+import networkx as nx
+import matplotlib.pyplot as plt
+from opensfm import graphing
 from opensfm.dataset_base import DataSetBase
 
 
@@ -15,6 +18,7 @@ def run_dataset(data: DataSetBase) -> None:
     features_end = timer()
     matches = tracking.load_matches(data, data.images())
     matches_end = timer()
+
     tracks_manager = tracking.create_tracks_manager(
         features,
         colors,
@@ -24,6 +28,21 @@ def run_dataset(data: DataSetBase) -> None:
         data.config["min_track_length"],
     )
     tracks_end = timer()
+
+    G = tracking.as_weighted_graph(tracks_manager)
+    # operazioni sul grafo
+    matches_to_remove = graphing.update_graph(G)
+    new_matches = tracking.remove_matches(matches, matches_to_remove)
+
+    tracks_manager = tracking.create_tracks_manager(
+        features,
+        colors,
+        segmentations,
+        instances,
+        new_matches,
+        data.config["min_track_length"],
+    )
+
     data.save_tracks_manager(tracks_manager)
     write_report(
         data,

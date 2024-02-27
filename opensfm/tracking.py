@@ -10,7 +10,7 @@ from opensfm.pymap import TracksManager
 
 
 logger: logging.Logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.DEBUG)
 
 def load_features(
     dataset: DataSetBase, images: t.List[str]
@@ -56,7 +56,16 @@ def load_matches(
             if im2 in images:
                 matches[im1, im2] = im1_matches[im2]
     return matches
-
+    
+def remove_matches(matches, matches_to_remove
+) -> t.Dict[t.Tuple[str, str], t.List[t.Tuple[int, int]]]:
+    for im1, im2 in matches_to_remove:
+        try:
+            del matches[(im1, im2)]
+        except:
+            del matches[(im2, im1)]
+        
+    return matches
 
 def create_tracks_manager(
     features: t.Dict[str, np.ndarray],
@@ -100,6 +109,7 @@ def create_tracks_manager(
                 x, y, s, int(r), int(g), int(b), featureid, segmentation, instance
             )
             tracks_manager.add_observation(image, str(track_id), obs)
+            
     return tracks_manager
 
 
@@ -200,12 +210,14 @@ def as_weighted_graph(tracks_manager: pymap.TracksManager) -> nx.Graph:
     having shots a snodes and weighted by the # of
     common tracks between two nodes.
     """
+    
     images = tracks_manager.get_shot_ids()
     image_graph = nx.Graph()
     for im in images:
         image_graph.add_node(im)
     for k, v in tracks_manager.get_all_pairs_connectivity().items():
         image_graph.add_edge(k[0], k[1], weight=v)
+    
     return image_graph
 
 
@@ -232,3 +244,7 @@ def as_graph(tracks_manager: pymap.TracksManager) -> nx.Graph:
                 feature_instance=obs.instance,
             )
     return graph
+
+def from_graph(G: nx.Graph) -> pymap.TracksManager:
+    """Return the viewing graph as a tracks manager"""
+    
