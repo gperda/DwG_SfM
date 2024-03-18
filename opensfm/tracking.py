@@ -216,7 +216,7 @@ def as_weighted_graph(tracks_manager: pymap.TracksManager) -> nx.Graph:
     for im in images:
         image_graph.add_node(im)
     for k, v in tracks_manager.get_all_pairs_connectivity().items():
-        image_graph.add_edge(k[0], k[1], weight=v)
+        image_graph.add_edge(k[0], k[1], weight=v, matches=v)
     
     return image_graph
 

@@ -32,6 +32,7 @@ def run_dataset(data: DataSetBase) -> None:
     G = tracking.as_weighted_graph(tracks_manager)
     # operazioni sul grafo
     matches_to_remove = graphing.update_graph(G)
+
     new_matches = tracking.remove_matches(matches, matches_to_remove)
 
     tracks_manager = tracking.create_tracks_manager(

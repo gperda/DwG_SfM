@@ -1,5 +1,6 @@
 import logging
 import typing as t
+import json
 import networkx as nx
 import matplotlib.pyplot as plt
 from opensfm import tracking
@@ -7,10 +8,17 @@ from opensfm.dataset_base import DataSetBase
 
 def update_graph(graph):
     nx.draw_networkx(graph, with_labels=True)
+
+    json_object = json.dumps(nx.node_link_data(graph), indent=4)
+    # Writing to sample.json
+    with open("graph.json", "w") as outfile:
+        outfile.write(json_object)
+
     plt.savefig("graph.png")
     # Compute communities using modularity
     C = nx.community.greedy_modularity_communities(graph, "weight")
     MST = nx.maximum_spanning_tree(graph, "weight")
+
     i = 0
     Cs = []
     for c in C:
@@ -37,5 +45,6 @@ def update_graph(graph):
     plt.close()
     nx.draw_networkx(MST, with_labels=True)
     plt.savefig("MST.png")
+
     return list(nx.non_edges(MST))
 
